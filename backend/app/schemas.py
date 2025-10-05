@@ -1,11 +1,12 @@
+# backend/app/schemas.py
 from pydantic import BaseModel
 
-class BusinessCreate(BaseModel):
+class BusinessBase(BaseModel):
     name: str
     location: str
     category: str
 
-class BusinessResponse(BusinessCreate):
+class BusinessResponse(BusinessBase):
     id: int
 
     class Config:
