@@ -14,15 +14,13 @@ def get_db():
 
 @router.get("/", response_model=list[schemas.BusinessResponse])
 def get_businesses(
-    city: str = Query(None), 
-    category: str = Query(None), 
+    location: str = Query(None), 
+    category: str = Query(None),
     db: Session = Depends(get_db)
 ):
     query = db.query(models.Business)
-    
-    if city:
-        query = query.filter(models.Business.location.ilike(f"%{city}%"))
+    if location:
+        query = query.filter(models.Business.location.ilike(f"%{location}%"))
     if category:
         query = query.filter(models.Business.category.ilike(f"%{category}%"))
-    
     return query.all()
