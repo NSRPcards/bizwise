@@ -1,61 +1,77 @@
-// frontend/src/pages/Home.jsx
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
-import L from "leaflet";
-import { useEffect, useRef } from "react";
+import React, { useState } from "react";
+import SearchForm from "../components/SearchForm";
+import AreaCard from "../components/AreaCard";
+import MapView from "../components/MapView";
+import { fetchRecommendations } from "../api";
 
-// small marker fix
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
+export default function Home() {
+  const [areas, setAreas] = useState([]);
+  const [center, setCenter] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-export default function Home({ areas = [], recs = [] }) {
-  const mapRef = useRef();
+  const handleSearch = async ({ category, city, max_rent }) => {
+    setLoading(true);
+    try {
+      const data = await fetchRecommendations({
+        city,
+        businessType: category,           // ✅ backend expects "businessType"
+        monthlyBudget: parseFloat(max_rent || 0), // ✅ backend expects float
+        targetPersonas: [],               // ✅ placeholder (you can add later)
+        top: 5,                           // optional limit
+      });
 
-  useEffect(() => {
-    if (recs && recs.length > 0 && mapRef.current) {
-      try {
-        const map = mapRef.current;
-        const first = recs[0];
-        if (first && first.lat && first.lng) {
-          map.setView([first.lat, first.lng], 13);
-        }
-      } catch (e) { /* ignore */ }
+      setAreas(data);
+      if (data.length) setCenter([data[0].lat, data[0].lng]);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to fetch recommendations (backend must be running).");
+    } finally {
+      setLoading(false);
     }
-  }, [recs]);
+  };
 
-  const center = areas.length ? [areas[0].lat || 19.076, areas[0].lng || 72.8777] : [19.076, 72.8777];
+  const viewOnMap = (area) => {
+    setCenter([area.lat, area.lng]);
+    const el = document.querySelector(".map-container");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   return (
-    <div className="map-wrap">
-      <MapContainer center={center} zoom={12} scrollWheelZoom style={{height:'100%', width:'100%'}} whenCreated={m => mapRef.current = m}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
-        />
-        {areas.map(a => (
-          a.lat && a.lng && (
-            <Marker key={a.id} position={[a.lat, a.lng]}>
-              <Popup>
-                <strong>{a.name}</strong><br/>
-                {a.city} — BLSI: {a.blsi ?? "n/a"}
-                <br/>
-                Badges: {(a.badges||[]).join(", ")}
-              </Popup>
-            </Marker>
-          )
-        ))}
+    <div className="py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        <section className="text-center py-8">
+          <h1 className="text-4xl font-bold text-slate-800">
+            Find the perfect location for your business
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Search by category, city and rent — BizWise scores areas using BLSI.
+          </p>
+        </section>
 
-        {recs.map(r => r.lat && r.lng && (
-          <CircleMarker key={`rec-${r.areaId}`} center={[r.lat, r.lng]} radius={10} pathOptions={{color:'green'}}>
-          </CircleMarker>
-        ))}
-      </MapContainer>
+        <SearchForm onSearch={handleSearch} />
+
+        {loading && <p className="text-center mt-6">Loading...</p>}
+
+        {!loading && areas.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-4 mt-6">
+            <div className="space-y-4">
+              {areas.map((a) => (
+                <AreaCard key={a.areaId} area={a} onViewMap={viewOnMap} /> // ✅ areaId not id
+              ))}
+            </div>
+
+            <div>
+              <MapView areas={areas} center={center} />
+            </div>
+          </div>
+        )}
+
+        {!loading && areas.length === 0 && (
+          <div className="text-center mt-8 text-gray-500">
+            Search to see recommended areas.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
