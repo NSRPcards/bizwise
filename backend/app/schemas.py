@@ -1,7 +1,8 @@
 # backend/app/schemas.py
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Dict, Optional
 
+# ------------------ Business ------------------
 class BusinessBase(BaseModel):
     name: str
     location: str
@@ -13,36 +14,38 @@ class BusinessResponse(BusinessBase):
     class Config:
         orm_mode = True
 
+# ------------------ Area ------------------
 class AreaResponse(BaseModel):
     id: int
     name: str
     city: str
-    lat: Optional[float]
-    lng: Optional[float]
-    blsi: Optional[float]
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    blsi: Optional[float] = 0
     badges: List[str] = []
-    # breakdown optional
-    breakdown: Optional[dict] = None
+    breakdown: Optional[Dict] = None
 
     class Config:
         orm_mode = True
 
+# ------------------ Recommendations ------------------
 class RecommendationsRequest(BaseModel):
     city: str
     businessType: str
-    monthlyBudget: float
-    targetPersonas: List[str]
-    top: int = 5
+    monthlyBudget: Optional[float] = 0
+    targetPersonas: Optional[List[str]] = []
+    top: Optional[int] = 5
 
 class RecommendationResponse(BaseModel):
     areaId: int
     name: str
-    lat: Optional[float]
-    lng: Optional[float]
+    lat: float
+    lng: float
     blsi: float
-    breakdown: dict
-    badges: List[str]
+    breakdown: Dict
+    badges: List[str] = []
 
+# ------------------ Simulation ------------------
 class SimulateRequest(BaseModel):
     areaId: int
     setupCost: float
@@ -57,4 +60,4 @@ class SimulateResponse(BaseModel):
     revenueMonthly: float
     costsMonthly: float
     profitMonthly: float
-    breakEvenMonths: Optional[float]
+    breakEvenMonths: Optional[float] = None

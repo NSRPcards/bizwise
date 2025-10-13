@@ -1,28 +1,35 @@
-# backend/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import business, areas, recommendations, simulate
-from app import models, database
+from dotenv import load_dotenv
+import os
 
-# ensure tables exist
-models.Base.metadata.create_all(bind=database.engine)
+# --- Load environment variables robustly ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # backend/
+ENV_PATH = os.path.join(BASE_DIR, ".env")
 
-app = FastAPI(title="BizWise API")
+if not os.path.exists(ENV_PATH):
+    raise FileNotFoundError(f".env file not found at: {ENV_PATH}")
+
+load_dotenv(dotenv_path=ENV_PATH)
+
+print("✅ GEOAPIFY_API_KEY loaded as:", os.getenv("GEOAPIFY_API_KEY"))
+
+from app.routes import recommendations
+
+# --- FastAPI app setup ---
+app = FastAPI(title="BizWise Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # dev; restrict later
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# include routers
-app.include_router(business.router, prefix="/business", tags=["Business"])
-app.include_router(areas.router, prefix="/areas", tags=["Areas"])
+# --- Register routes ---
 app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
-app.include_router(simulate.router, prefix="/simulate", tags=["Simulate"])
 
 @app.get("/")
 def root():
-    return {"message": "BizWise API running"}
+    return {"message": "BizWise backend is running successfully"}
