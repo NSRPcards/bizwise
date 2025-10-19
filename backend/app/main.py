@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=ENV_PATH)
 
 print("✅ GEOAPIFY_API_KEY loaded as:", os.getenv("GEOAPIFY_API_KEY"))
 
-from app.routes import recommendations
+from app.routes import recommendations, ratings, admin, user_tracking
 
 # --- FastAPI app setup ---
 app = FastAPI(title="BizWise Backend")
@@ -29,6 +29,9 @@ app.add_middleware(
 
 # --- Register routes ---
 app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
+app.include_router(ratings.router)   # ✅ new rating routes
+app.include_router(admin.router)
+app.include_router(user_tracking.router)
 
 @app.get("/")
 def root():

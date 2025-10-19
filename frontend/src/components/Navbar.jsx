@@ -14,7 +14,7 @@ export default function Navbar(){
         </Link>
         <nav className="space-x-4">
           <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/admin" className="hover:underline">Admin</Link>
+          <Link to="/admin/login" className="hover:underline">Admin</Link>
         </nav>
       </div>
     </header>

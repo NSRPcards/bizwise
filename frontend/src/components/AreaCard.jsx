@@ -1,4 +1,5 @@
 import React from "react";
+import RatingStars from "./RatingStars";
 
 export default function AreaCard({ area, onViewMap }) {
   if (!area) return null;
@@ -23,7 +24,10 @@ export default function AreaCard({ area, onViewMap }) {
           ))}
         </div>
       )}
-
+      {/* Rating */}
+      <div className="mt-2">
+        <RatingStars cityName={area.name} />
+      </div>
       <button
         onClick={() => onViewMap(area)}
         className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"

@@ -1,6 +1,6 @@
 # backend/app/models.py
 from sqlalchemy import Column, Integer, String, Float, Text
-from .database import Base
+from app.database import Base
 
 class Business(Base):
     __tablename__ = "businesses"
@@ -26,3 +26,16 @@ class Area(Base):
     badges = Column(Text, default="")
     # optional: store a precomputed blsi for quick use
     blsi = Column(Float, nullable=True)
+
+class Rating(Base):
+    __tablename__ = "ratings"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(100))
+    city_name = Column(String(100))
+    rating = Column(Integer)
+    
+class UserVisit(Base):
+    __tablename__ = "user_visits"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, unique=True, nullable=True)  # cookie ID
+    ip = Column(String, nullable=True)  # fallback IP
